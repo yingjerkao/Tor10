@@ -1,0 +1,392 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tor10.nn &mdash; Tor10 0.3 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Tor10
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Symmetry.html">tor10.Symmetry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Bond.html">tor10.Bond</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../UniTensor.html">tor10.UniTensor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Network.html">tor10.Network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../linalg.html">tor10.linalg</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../nn.html">tor10.nn</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Tor10</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>tor10.nn</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for tor10.nn</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">from</span> <span class="nn">.UniTensor</span> <span class="k">import</span> <span class="o">*</span>
+
+<div class="viewcode-block" id="Parameter"><a class="viewcode-back" href="../../nn.html#tor10.nn.Parameter">[docs]</a><span class="k">def</span> <span class="nf">Parameter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a UniTensor to be considered as a module parameter. </span>
+
+<span class="sd">    They have a special property when use with torch.nn.Module. When they are assigned as Module attributes, they are automatically added to the list of its parameter, and appears in Module.parameters. (This is similar as torch.nn.Parameter)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data: </span>
+<span class="sd">            UniTensor, parameter tensor.</span>
+
+<span class="sd">        requires_grad:        </span>
+<span class="sd">            bool, if the parameter requires gradient. </span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        UniTensor, with Paramter property.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">    ::</span>
+<span class="sd">        import torch</span>
+<span class="sd">        class Model(torch.nn.Module):</span>
+<span class="sd">            def __init__(self):</span>
+<span class="sd">                super(Model,self).__init__()</span>
+<span class="sd">                ## Customize and register the parameter.</span>
+<span class="sd">                self.P1 = tor10.nn.Parameter(tor10.UniTensor(bonds=[tor10.Bond(2),tor10.Bond(2)],rowrank=1))</span>
+<span class="sd">                self.P2 = tor10.nn.Parameter(tor10.UniTensor(bonds=[tor10.Bond(2),tor10.Bond(2)],rowrank=1))</span>
+<span class="sd"> </span>
+<span class="sd">            def forward(self,x):</span>
+<span class="sd">                y = tor10.Matmul(tor10.Matmul(x,self.P1),self.P2)</span>
+<span class="sd">                return y</span>
+
+<span class="sd">    &gt;&gt;&gt; md = Model()</span>
+<span class="sd">    &gt;&gt;&gt; print(list(md.parameters()))</span>
+<span class="sd">    [Parameter containing:</span>
+<span class="sd">    tensor([[0., 0.],</span>
+<span class="sd">            [0., 0.]], dtype=torch.float64, requires_grad=True), Parameter containing:</span>
+<span class="sd">    tensor([[0., 0.],</span>
+<span class="sd">            [0., 0.]], dtype=torch.float64, requires_grad=True)]</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">UniTensor</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;nn.Parameter&quot;</span><span class="p">,</span><span class="s2">&quot;[ERROR] data should be an UniTensor&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">braket</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;nn.Parameter&quot;</span><span class="p">,</span><span class="s2">&quot;[ERROR] data can only be an untagged uniTensor&quot;</span><span class="p">)</span>
+    
+
+    <span class="n">data</span><span class="o">.</span><span class="n">Storage</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">Storage</span><span class="p">,</span><span class="n">requires_grad</span><span class="o">=</span><span class="n">requires_grad</span><span class="p">)</span>
+
+
+    <span class="c1">## Get the mother instance</span>
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">stack</span><span class="p">()[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">args</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">value_dict</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargvalues</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="ow">and</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;self&#39;</span><span class="p">:</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="n">value_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;self&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">instance</span><span class="o">=</span><span class="kc">None</span>
+
+
+    <span class="k">if</span> <span class="n">instance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1">#print(&quot;OK&quot;)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+            <span class="c1">#print(&quot;OK module&quot;)</span>
+            
+            <span class="n">n</span><span class="o">=</span><span class="mi">0</span>
+            <span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span><span class="s1">&#39;param_</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">n</span><span class="p">):</span>
+                    <span class="n">n</span><span class="o">+=</span><span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span><span class="s1">&#39;param_</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">n</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">Storage</span><span class="p">)</span>
+                    <span class="k">break</span>
+ 
+    <span class="k">return</span> <span class="n">data</span></div>
+        
+
+<div class="viewcode-block" id="Linear"><a class="viewcode-back" href="../../nn.html#tor10.nn.Linear">[docs]</a><span class="k">class</span> <span class="nc">Linear</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Applies a linear transformation to the incoming data: :math:`y = xA^T + b`</span>
+
+<span class="sd">    Note that the the input and output UniTensors will have shape:</span>
+
+<span class="sd">        - Input: :math:`(N, *, \text{in\_features})` where :math:`*` means any number of</span>
+<span class="sd">          additional dimensions</span>
+<span class="sd">        - Output: :math:`(N, *, \text{out\_features})` where all but the last dimension</span>
+<span class="sd">          are the same shape as the input.</span>
+
+
+<span class="sd">    Args:</span>
+<span class="sd">        in_features: </span>
+<span class="sd">            uint, size of each input sample</span>
+<span class="sd">        </span>
+<span class="sd">        out_features: </span>
+<span class="sd">            uint, size of each output sample</span>
+<span class="sd">        </span>
+<span class="sd">        bias: </span>
+<span class="sd">            bool, If set to False, the layer will not learn an additive bias.</span>
+
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        bias:   the learnable bias of the module of shape :math:`(\text{out\_features})`.</span>
+<span class="sd">                If :attr:`bias` is ``True``, the values are initialized from</span>
+<span class="sd">                :math:`\mathcal{U}(-\sqrt{k}, \sqrt{k})` where</span>
+<span class="sd">                :math:`k = \frac{1}{\text{in\_features}}`</span>
+
+<span class="sd">    Examples::</span>
+
+<span class="sd">        &gt;&gt;&gt; m = tor10.nn.Linear(20, 30)</span>
+<span class="sd">        &gt;&gt;&gt; iput = tor10.From_torch(torch.randn(128, 20),rowrank=1)</span>
+<span class="sd">        &gt;&gt;&gt; oput = m(iput)</span>
+<span class="sd">        &gt;&gt;&gt; print(oput.shape)</span>
+<span class="sd">        torch.Size([128, 30])</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">in_features</span><span class="p">,</span><span class="n">out_features</span><span class="p">,</span><span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tnn</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="p">,</span><span class="n">out_features</span><span class="p">,</span><span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">)</span>
+
+        <span class="c1">## hook </span>
+        <span class="c1">## Get the mother instance</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">stack</span><span class="p">()[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">args</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">value_dict</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargvalues</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="ow">and</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;self&#39;</span><span class="p">:</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="n">value_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;self&#39;</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">instance</span><span class="o">=</span><span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">instance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1">#print(&quot;OK&quot;)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+                <span class="c1">#print(&quot;OK module&quot;)</span>
+
+                <span class="n">n</span><span class="o">=</span><span class="mi">0</span>
+                <span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span><span class="s1">&#39;param_</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">n</span><span class="p">):</span>
+                        <span class="n">n</span><span class="o">+=</span><span class="mi">1</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="nb">setattr</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span><span class="s1">&#39;param_</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tnn</span><span class="p">)</span>
+                        <span class="k">break</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ipt</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">ipt</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ipt</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ipt</span><span class="p">,</span><span class="n">UniTensor</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;tor10.nn.Linear&quot;</span><span class="p">,</span><span class="s2">&quot;[ERROR] can only accept UniTensor&quot;</span><span class="p">)</span>
+    
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tnn</span><span class="p">(</span><span class="n">ipt</span><span class="o">.</span><span class="n">Storage</span><span class="p">)</span>
+        
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">UniTensor</span><span class="p">(</span><span class="n">bonds</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">ipt</span><span class="o">.</span><span class="n">bonds</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span><span class="n">Bond</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tnn</span><span class="o">.</span><span class="n">out_features</span><span class="p">)),</span><span class="n">rowrank</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">ipt</span><span class="o">.</span><span class="n">bonds</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span><span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">tmp</span><span class="o">.</span><span class="n">_mac</span><span class="p">(</span><span class="n">torch_tensor</span> <span class="o">=</span> <span class="n">out</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">tmp</span>
+    <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;in_features=</span><span class="si">{}</span><span class="s1">, out_features=</span><span class="si">{}</span><span class="s1">, bias=</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>\
+            <span class="bp">self</span><span class="o">.</span><span class="n">tnn</span><span class="o">.</span><span class="n">in_features</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tnn</span><span class="o">.</span><span class="n">out_features</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tnn</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Linear.weight"><a class="viewcode-back" href="../../nn.html#tor10.nn.Linear.weight">[docs]</a>    <span class="k">def</span> <span class="nf">weight</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the learnable weights of the module of shape</span>
+<span class="sd">        :math:`(\text{out\_features}, \text{in\_features})`. The values are</span>
+<span class="sd">        initialized from :math:`\mathcal{U}(-\sqrt{k}, \sqrt{k})`, where</span>
+<span class="sd">        :math:`k = \frac{1}{\text{in\_features}}`</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">            UniTensor, rank-2</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">UniTensor</span><span class="p">(</span><span class="n">bonds</span><span class="o">=</span><span class="p">[</span><span class="n">Bond</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tnn</span><span class="o">.</span><span class="n">out_features</span><span class="p">),</span><span class="n">Bond</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tnn</span><span class="o">.</span><span class="n">in_features</span><span class="p">)],</span><span class="n">rowrank</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">tmp</span><span class="o">.</span><span class="n">_mac</span><span class="p">(</span><span class="n">torch_tensor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tnn</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tmp</span></div>
+
+<div class="viewcode-block" id="Linear.bias"><a class="viewcode-back" href="../../nn.html#tor10.nn.Linear.bias">[docs]</a>    <span class="k">def</span> <span class="nf">bias</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        the learnable bias of the module of shape :math:`(\text{out\_features})`.</span>
+<span class="sd">        If :attr:`bias` is ``True``, the values are initialized from</span>
+<span class="sd">        :math:`\mathcal{U}(-\sqrt{k}, \sqrt{k})` where</span>
+<span class="sd">        :math:`k = \frac{1}{\text{in\_features}}`</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">            if :attr:`bias`==True, return a UniTensor of bias; if False, return None</span>
+<span class="sd">                </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tnn</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">UniTensor</span><span class="p">(</span><span class="n">bonds</span><span class="o">=</span><span class="p">[</span><span class="n">Bond</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])],</span><span class="n">rowrank</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">tmp</span><span class="o">.</span><span class="n">_mac</span><span class="p">(</span><span class="n">torch_tensor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tnn</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">tmp</span></div></div>
+
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Kai-Hsin Wu
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
